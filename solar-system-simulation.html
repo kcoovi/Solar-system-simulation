@@ -205,24 +205,21 @@
           this.element.addEventListener("click", (e) => {
             const data = planetData[this.name];
             planetInfo.innerHTML = `
-                        <h3>${this.name}</h3>
-                        <p><strong>Mass:</strong> ${data.mass}</p>
-                        <p><strong>Distance from Sun:</strong> ${data.distance}</p>
-                        <p>${data.description}</p>
-                    `;
+              <h3>${this.name}</h3>
+              <p><strong>Mass:</strong> ${data.mass}</p>
+              <p><strong>Distance from Sun:</strong> ${data.distance}</p>
+              <p><strong>Description:</strong> ${data.description}</p>
+            `;
             planetInfo.style.display = "block";
             planetInfo.style.left = `${e.pageX + 15}px`;
             planetInfo.style.top = `${e.pageY + 15}px`;
           });
-
-          // Hide the planetInfo box when clicking anywhere outside planets
           document.addEventListener("click", (e) => {
             if (!this.element.contains(e.target)) {
               planetInfo.style.display = "none";
             }
           });
         }
-
         updatePosition() {
           this.angle += this.speed;
           const centerX = 300;
