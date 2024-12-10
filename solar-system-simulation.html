@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Solar System Simulation</title>
+    <style>
+        body { 
+            background-color: black; 
+            color: white; 
+            font-family: Arial, sans-serif; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #solarSystem {
+            position: relative;
+            width: 800px;
+            height: 800px;
+        }
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .orbit {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            transform: translate(-50%, -50%);
+        }
+        .sun {
+            width: 100px;
+            height: 100px;
+            background-color: yellow;
+            border-radius: 50%;
+            position: absolute;
+            top: 350px;
+            left: 350px;
+            box-shadow: 0 0 50px yellow;
+        }
+        #planetInfo {
+            position: absolute;
+            background-color: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="solarSystem">
+        <div class="sun"></div>
+        <div id="planetInfo"></div>
+    </div>
+
+    <script>
+        const planetData = {
+            'Mercury': { mass: '3.3011e23 kg', averageDistanceFromSun: '57.91 million km' },
+            'Venus': { mass: '4.8675e24 kg', averageDistanceFromSun: '108.2 million km' },
+            'Earth': { mass: '5.97237e24 kg', averageDistanceFromSun: '149.6 million km' },
+            'Mars': { mass: '6.4171e23 kg', averageDistanceFromSun: '227.9 million km' },
+            'Jupiter': { mass: '1.8982e27 kg', averageDistanceFromSun: '778.5 million km' },
+            'Saturn': { mass: '5.6834e26 kg', averageDistanceFromSun: '1.434 billion km' },
+            'Uranus': { mass: '8.6810e25 kg', averageDistanceFromSun: '2.871 billion km' },
+            'Neptune': { mass: '1.02413e26 kg', averageDistanceFromSun: '4.495 billion km' }
+        };
+
+        class Planet {
+            constructor(name, distance, size, color, speed) {
+                this.name = name;
+                this.distance = distance;
+                this.size = size;
+                this.color = color;
+                this.speed = speed;
+                this.angle = 0;
+                this.element = this.createElement();
+                this.orbitElement = this.createOrbitLine();
+                this.setupHoverEvents();
+            }
+
+            createElement() {
+                const planet = document.createElement('div');
+                planet.classList.add('planet');
+                planet.style.width = `${this.size}px`;
+                planet.style.height = `${this.size}px`;
+                planet.style.backgroundColor = this.color;
+                document.getElementById('solarSystem').appendChild(planet);
+                return planet;
+            }
+
+            createOrbitLine() {
+                const orbit = document.createElement('div');
+                orbit.classList.add('orbit');
+                orbit.style.width = `${this.distance * 2}px`;
+                orbit.style.height = `${this.distance * 2}px`;
+                document.getElementById('solarSystem').appendChild(orbit);
+                return orbit;
+            }
+
+            setupHoverEvents() {
+                const planetInfo = document.getElementById('planetInfo');
+                this.element.addEventListener('mousemove', (e) => {
+                    planetInfo.style.display = 'block';
+                    planetInfo.style.left = `${e.pageX + 10}px`;
+                    planetInfo.style.top = `${e.pageY + 10}px`;
+                    const data = planetData[this.name];
+                    planetInfo.innerHTML = `
+                        <strong>${this.name}</strong><br>
+                        Mass: ${data.mass}<br>
+                        Avg. Distance from Sun: ${data.averageDistanceFromSun}
+                    `;
+                });
+
+                this.element.addEventListener('mouseleave', () => {
+                    planetInfo.style.display = 'none';
+                });
+            }
+
+            updatePosition() {
+                this.angle += this.speed;
+                const centerX = 400;
+                const centerY = 400;
+                const x = centerX + Math.cos(this.angle) * this.distance - this.size / 2;
+                const y = centerY + Math.sin(this.angle) * this.distance - this.size / 2;
+                
+                this.element.style.left = `${x}px`;
+                this.element.style.top = `${y}px`;
+                
+                this.orbitElement.style.left = `${centerX}px`;
+                this.orbitElement.style.top = `${centerY}px`;
+            }
+        }
+
+        const planets = [
+            new Planet('Mercury', 150, 10, 'gray', 0.04),
+            new Planet('Venus', 200, 15, 'orange', 0.015),
+            new Planet('Earth', 250, 20, 'blue', 0.01),
+            new Planet('Mars', 300, 15, 'red', 0.008),
+            new Planet('Jupiter', 380, 40, '#FFA500', 0.004),
+            new Planet('Saturn', 450, 35, '#DEB887', 0.002),
+            new Planet('Uranus', 520, 25, 'lightblue', 0.001),
+            new Planet('Neptune', 600, 25, 'darkblue', 0.0008)
+        ];
+
+        function animate() {
+            planets.forEach(planet => planet.updatePosition());
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
