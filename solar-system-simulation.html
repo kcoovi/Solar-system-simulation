@@ -1,157 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Solar System Simulation</title>
     <style>
-        body { 
-            background-color: black; 
-            color: white; 
-            font-family: Arial, sans-serif; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
-        #solarSystem {
-            position: relative;
-            width: 800px;
-            height: 800px;
-        }
-        .planet {
-            position: absolute;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        .orbit {
-            position: absolute;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.2);
-            transform: translate(-50%, -50%);
-        }
-        .sun {
-            width: 100px;
-            height: 100px;
-            background-color: yellow;
-            border-radius: 50%;
-            position: absolute;
-            top: 350px;
-            left: 350px;
-            box-shadow: 0 0 50px yellow;
-        }
-        #planetInfo {
-            position: absolute;
-            background-color: rgba(0,0,0,0.7);
-            padding: 10px;
-            border-radius: 5px;
-            display: none;
-            pointer-events: none;
-        }
+      body {
+        background-color: black;
+        color: white;
+        font-family: "Arial", sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+      }
+      #solarSystem {
+        position: relative;
+        width: 600px;
+        height: 600px;
+      }
+      .planet {
+        position: absolute;
+        border-radius: 50%;
+        transition: transform 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .planet-label {
+        position: absolute;
+        color: white;
+        font-size: 8px;
+        text-shadow: 1px 1px 2px black;
+        pointer-events: none;
+        text-align: center;
+        white-space: nowrap;
+      }
+      .orbit {
+        position: absolute;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+      }
+      .sun {
+        width: 60px;
+        height: 60px;
+        background-color: yellow;
+        border-radius: 50%;
+        position: absolute;
+        top: 270px;
+        left: 270px;
+        box-shadow: 0 0 30px yellow;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 10px;
+        color: black;
+      }
+      #planetInfo {
+        position: fixed;
+        background-color: rgba(0, 0, 0, 0.8);
+        border: 1px solid white;
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 200px;
+        z-index: 1000;
+        pointer-events: none;
+        font-size: 12px;
+        display: none;
+      }
+      .starfield {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="solarSystem">
-        <div class="sun"></div>
-        <div id="planetInfo"></div>
+      <div class="starfield"></div>
+      <div class="sun">Sun</div>
+      <div id="planetInfo"></div>
     </div>
 
     <script>
-        const planetData = {
-            'Mercury': { mass: '3.3011e23 kg', averageDistanceFromSun: '57.91 million km' },
-            'Venus': { mass: '4.8675e24 kg', averageDistanceFromSun: '108.2 million km' },
-            'Earth': { mass: '5.97237e24 kg', averageDistanceFromSun: '149.6 million km' },
-            'Mars': { mass: '6.4171e23 kg', averageDistanceFromSun: '227.9 million km' },
-            'Jupiter': { mass: '1.8982e27 kg', averageDistanceFromSun: '778.5 million km' },
-            'Saturn': { mass: '5.6834e26 kg', averageDistanceFromSun: '1.434 billion km' },
-            'Uranus': { mass: '8.6810e25 kg', averageDistanceFromSun: '2.871 billion km' },
-            'Neptune': { mass: '1.02413e26 kg', averageDistanceFromSun: '4.495 billion km' }
-        };
+      // Create starfield background
+      function createStarfield() {
+        const starfield = document.querySelector(".starfield");
+        for (let i = 0; i < 150; i++) {
+          const star = document.createElement("div");
+          star.style.position = "absolute";
+          star.style.width = "1px";
+          star.style.height = "1px";
+          star.style.backgroundColor = "white";
+          star.style.borderRadius = "50%";
+          star.style.left = `${Math.random() * 100}%`;
+          star.style.top = `${Math.random() * 100}%`;
+          star.style.opacity = Math.random().toString();
+          starfield.appendChild(star);
+        }
+      }
+      createStarfield();
 
-        class Planet {
-            constructor(name, distance, size, color, speed) {
-                this.name = name;
-                this.distance = distance;
-                this.size = size;
-                this.color = color;
-                this.speed = speed;
-                this.angle = 0;
-                this.element = this.createElement();
-                this.orbitElement = this.createOrbitLine();
-                this.setupHoverEvents();
-            }
+      const planetData = {
+        Mercury: {
+          mass: "3.3011 × 10²³ kg",
+          distance: "57.91 million km",
+          description:
+            "Smallest planet in the solar system. Rocky, with a heavily cratered surface.",
+        },
+        Venus: {
+          mass: "4.8675 × 10²⁴ kg",
+          distance: "108.2 million km",
+          description:
+            'Hottest planet due to its thick, toxic atmosphere. Often called Earth\'s "sister planet".',
+        },
+        Earth: {
+          mass: "5.97237 × 10²⁴ kg",
+          distance: "149.6 million km",
+          description:
+            "Our home planet. Only known planet to support life, with diverse ecosystems.",
+        },
+        Mars: {
+          mass: "6.4171 × 10²³ kg",
+          distance: "227.9 million km",
+          description:
+            'The "Red Planet". Has potential for future human exploration and possible colonization.',
+        },
+        Jupiter: {
+          mass: "1.8982 × 10²⁷ kg",
+          distance: "778.5 million km",
+          description:
+            "Largest planet in our solar system. A gas giant with a Great Red Spot storm.",
+        },
+        Saturn: {
+          mass: "5.6834 × 10²⁶ kg",
+          distance: "1.434 billion km",
+          description:
+            "Known for its spectacular ring system. A gas giant with numerous moons.",
+        },
+        Uranus: {
+          mass: "8.6810 × 10²⁵ kg",
+          distance: "2.871 billion km",
+          description:
+            "An ice giant that rotates on its side. Has a unique blue-green color.",
+        },
+        Neptune: {
+          mass: "1.02413 × 10²⁶ kg",
+          distance: "4.495 billion km",
+          description:
+            "The windiest planet, with speeds reaching up to 1,500 mph. Deepest blue color.",
+        },
+      };
 
-            createElement() {
-                const planet = document.createElement('div');
-                planet.classList.add('planet');
-                planet.style.width = `${this.size}px`;
-                planet.style.height = `${this.size}px`;
-                planet.style.backgroundColor = this.color;
-                document.getElementById('solarSystem').appendChild(planet);
-                return planet;
-            }
+      class Planet {
+        constructor(name, distance, size, color, speed) {
+          this.name = name;
+          this.distance = distance;
+          this.size = size;
+          this.color = color;
+          this.speed = speed;
+          this.angle = 0;
+          this.element = this.createElement();
+          this.labelElement = this.createLabel();
+          this.orbitElement = this.createOrbitLine();
+          this.setupClickEvents();
+        }
 
-            createOrbitLine() {
-                const orbit = document.createElement('div');
-                orbit.classList.add('orbit');
-                orbit.style.width = `${this.distance * 2}px`;
-                orbit.style.height = `${this.distance * 2}px`;
-                document.getElementById('solarSystem').appendChild(orbit);
-                return orbit;
-            }
+        createElement() {
+          const planet = document.createElement("div");
+          planet.classList.add("planet");
+          planet.style.width = `${this.size}px`;
+          planet.style.height = `${this.size}px`;
+          planet.style.backgroundColor = this.color;
+          document.getElementById("solarSystem").appendChild(planet);
+          return planet;
+        }
 
-            setupHoverEvents() {
-                const planetInfo = document.getElementById('planetInfo');
-                this.element.addEventListener('mousemove', (e) => {
-                    planetInfo.style.display = 'block';
-                    planetInfo.style.left = `${e.pageX + 10}px`;
-                    planetInfo.style.top = `${e.pageY + 10}px`;
-                    const data = planetData[this.name];
-                    planetInfo.innerHTML = `
-                        <strong>${this.name}</strong><br>
-                        Mass: ${data.mass}<br>
-                        Avg. Distance from Sun: ${data.averageDistanceFromSun}
+        createLabel() {
+          const label = document.createElement("div");
+          label.classList.add("planet-label");
+          label.textContent = this.name;
+          document.getElementById("solarSystem").appendChild(label);
+          return label;
+        }
+
+        createOrbitLine() {
+          const orbit = document.createElement("div");
+          orbit.classList.add("orbit");
+          orbit.style.width = `${this.distance * 2}px`;
+          orbit.style.height = `${this.distance * 2}px`;
+          document.getElementById("solarSystem").appendChild(orbit);
+          return orbit;
+        }
+
+        setupClickEvents() {
+          const planetInfo = document.getElementById("planetInfo");
+          this.element.addEventListener("click", (e) => {
+            const data = planetData[this.name];
+            planetInfo.innerHTML = `
+                        <h3>${this.name}</h3>
+                        <p><strong>Mass:</strong> ${data.mass}</p>
+                        <p><strong>Distance from Sun:</strong> ${data.distance}</p>
+                        <p>${data.description}</p>
                     `;
-                });
+            planetInfo.style.display = "block";
+            planetInfo.style.left = `${e.pageX + 15}px`;
+            planetInfo.style.top = `${e.pageY + 15}px`;
+          });
 
-                this.element.addEventListener('mouseleave', () => {
-                    planetInfo.style.display = 'none';
-                });
+          // Hide the planetInfo box when clicking anywhere outside planets
+          document.addEventListener("click", (e) => {
+            if (!this.element.contains(e.target)) {
+              planetInfo.style.display = "none";
             }
-
-            updatePosition() {
-                this.angle += this.speed;
-                const centerX = 400;
-                const centerY = 400;
-                const x = centerX + Math.cos(this.angle) * this.distance - this.size / 2;
-                const y = centerY + Math.sin(this.angle) * this.distance - this.size / 2;
-                
-                this.element.style.left = `${x}px`;
-                this.element.style.top = `${y}px`;
-                
-                this.orbitElement.style.left = `${centerX}px`;
-                this.orbitElement.style.top = `${centerY}px`;
-            }
+          });
         }
 
-        const planets = [
-            new Planet('Mercury', 150, 10, 'gray', 0.04),
-            new Planet('Venus', 200, 15, 'orange', 0.015),
-            new Planet('Earth', 250, 20, 'blue', 0.01),
-            new Planet('Mars', 300, 15, 'red', 0.008),
-            new Planet('Jupiter', 380, 40, '#FFA500', 0.004),
-            new Planet('Saturn', 450, 35, '#DEB887', 0.002),
-            new Planet('Uranus', 520, 25, 'lightblue', 0.001),
-            new Planet('Neptune', 600, 25, 'darkblue', 0.0008)
-        ];
+        updatePosition() {
+          this.angle += this.speed;
+          const centerX = 300;
+          const centerY = 300;
+          const x =
+            centerX + Math.cos(this.angle) * this.distance - this.size / 2;
+          const y =
+            centerY + Math.sin(this.angle) * this.distance - this.size / 2;
 
-        function animate() {
-            planets.forEach(planet => planet.updatePosition());
-            requestAnimationFrame(animate);
+          this.element.style.left = `${x}px`;
+          this.element.style.top = `${y}px`;
+
+          // Position label slightly offset from planet
+          this.labelElement.style.left = `${x + this.size}px`;
+          this.labelElement.style.top = `${y}px`;
+
+          this.orbitElement.style.left = `${centerX}px`;
+          this.orbitElement.style.top = `${centerY}px`;
         }
+      }
 
-        animate();
+      const planets = [
+        new Planet("Mercury", 90, 6, "gray", 0.04),
+        new Planet("Venus", 120, 10, "orange", 0.015),
+        new Planet("Earth", 150, 12, "blue", 0.01),
+        new Planet("Mars", 180, 9, "red", 0.008),
+        new Planet("Jupiter", 230, 24, "#FFA500", 0.004),
+        new Planet("Saturn", 270, 21, "#DEB887", 0.002),
+        new Planet("Uranus", 310, 15, "lightblue", 0.001),
+        new Planet("Neptune", 360, 15, "darkblue", 0.0008),
+      ];
+
+      function animate() {
+        planets.forEach((planet) => planet.updatePosition());
+        requestAnimationFrame(animate);
+      }
+      animate();
     </script>
-</body>
+  </body>
 </html>
